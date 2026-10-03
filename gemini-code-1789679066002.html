@@ -1,0 +1,2134 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>معمار روباتیک: کارگاه اتوماسیون الگوها</title>
+  <style>
+    :root {
+      --bg-factory: #080d14;
+      --panel-bg: rgba(16, 25, 38, 0.96);
+      --panel-border: #22374e;
+      --accent-cyan: #00e5ff;
+      --accent-gold: #ffb800;
+      --accent-green: #00e676;
+      --accent-red: #ff3d71;
+      --accent-purple: #b388ff;
+      --text-main: #f0f4f8;
+      --text-muted: #8ea3b7;
+      --border-radius-lg: 18px;
+      --border-radius-md: 12px;
+      --shadow-elevation: 0 12px 30px rgba(0, 0, 0, 0.6);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+      -webkit-user-select: none;
+      touch-action: manipulation;
+    }
+
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "IRANSans", "Vazirmatn", Tahoma, sans-serif;
+      background-color: var(--bg-factory);
+      color: var(--text-main);
+      height: 100vh;
+      height: 100dvh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    /* صفحه آغازین */
+    #start-screen {
+      position: fixed;
+      inset: 0;
+      background: linear-gradient(rgba(8, 13, 20, 0.84), rgba(8, 13, 20, 0.9)),
+                  url('splash-hero.jpg') center/cover no-repeat,
+                  radial-gradient(circle at center, #132438 0%, #060a10 100%);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 16px;
+      z-index: 200;
+      transition: opacity 0.3s ease, visibility 0.3s ease;
+    }
+
+    #start-screen.hidden {
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+    }
+
+    .splash-card {
+      background: rgba(17, 27, 41, 0.95);
+      border: 2px solid var(--panel-border);
+      border-radius: 24px;
+      padding: 28px 22px;
+      max-width: 480px;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      gap: 14px;
+      box-shadow: var(--shadow-elevation);
+      backdrop-filter: blur(12px);
+    }
+
+    .splash-icon {
+      font-size: 52px;
+      animation: floatBot 3s ease-in-out infinite;
+    }
+
+    @keyframes floatBot {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-8px); }
+    }
+
+    .splash-title {
+      font-size: 1.6rem;
+      font-weight: 900;
+      color: var(--accent-cyan);
+    }
+
+    .splash-credit {
+      font-size: 0.88rem;
+      color: #ff85a2;
+      font-weight: bold;
+      background: rgba(255, 61, 113, 0.12);
+      border: 1px solid rgba(255, 61, 113, 0.3);
+      padding: 5px 14px;
+      border-radius: 20px;
+    }
+
+    .splash-stats {
+      background: rgba(0, 0, 0, 0.35);
+      border: 1px solid var(--panel-border);
+      border-radius: var(--border-radius-md);
+      padding: 10px 14px;
+      width: 100%;
+      display: flex;
+      justify-content: space-around;
+      font-size: 0.85rem;
+    }
+
+    .splash-stats span {
+      color: var(--accent-gold);
+      font-weight: bold;
+    }
+
+    .btn-start-game {
+      min-height: 56px;
+      width: 100%;
+      background: linear-gradient(135deg, #00b0ff 0%, #00e676 100%);
+      color: #03141f;
+      border: none;
+      border-radius: var(--border-radius-md);
+      font-size: 1.15rem;
+      font-weight: 900;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    /* کارگاه بازی */
+    #app-viewport {
+      display: flex;
+      flex-direction: column;
+      width: 100vw;
+      height: 100vh;
+      height: 100dvh;
+      position: relative;
+    }
+
+    .top-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 6px 12px;
+      background: var(--panel-bg);
+      border-bottom: 2px solid var(--panel-border);
+      z-index: 20;
+    }
+
+    .brand-section {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+    }
+
+    .brand-title {
+      font-size: 1rem;
+      font-weight: 800;
+      color: var(--accent-cyan);
+    }
+
+    .economy-cluster {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .stat-badge {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(0, 0, 0, 0.45);
+      border: 1px solid var(--panel-border);
+      padding: 5px 10px;
+      border-radius: var(--border-radius-md);
+      font-size: 0.85rem;
+      font-weight: bold;
+    }
+
+    .coin-badge {
+      border-color: rgba(255, 184, 0, 0.45);
+      color: var(--accent-gold);
+    }
+
+    .top-actions { display: flex; gap: 6px; }
+
+    .btn-touch {
+      min-height: 42px;
+      padding: 6px 12px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      border: 2px solid var(--panel-border);
+      background: #162436;
+      color: var(--text-main);
+      border-radius: var(--border-radius-md);
+      font-size: 0.85rem;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .btn-touch:active {
+      transform: scale(0.94);
+      background: #21354d;
+    }
+
+    .btn-cyan { background: #006f8c; border-color: var(--accent-cyan); }
+    .btn-green { background: #007a3d; border-color: var(--accent-green); }
+    .btn-gold { background: #856100; border-color: var(--accent-gold); }
+    .btn-purple { background: #552787; border-color: var(--accent-purple); }
+    .btn-red { background: #881b34; border-color: var(--accent-red); }
+
+    /* ویترین پویا و مقایسه‌ای */
+    .blueprint-strip {
+      background: #0d141f;
+      border-bottom: 2px solid var(--panel-border);
+      padding: 6px 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      z-index: 10;
+      flex-shrink: 0;
+    }
+
+    .blueprint-card {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      background: #131e2c;
+      border: 1.5px solid var(--panel-border);
+      border-radius: var(--border-radius-md);
+      padding: 4px 6px;
+      gap: 2px;
+      min-width: 72px;
+    }
+
+    .blueprint-card.active-target {
+      border-color: var(--accent-cyan);
+      background: #10293d;
+      box-shadow: 0 0 10px rgba(0, 229, 255, 0.3);
+    }
+
+    .blueprint-label {
+      font-size: 0.75rem;
+      font-weight: bold;
+      color: var(--accent-cyan);
+    }
+
+    .blueprint-card.active-target .blueprint-label {
+      color: var(--accent-gold);
+    }
+
+    .blueprint-canvas {
+      width: 68px;
+      height: 48px;
+      display: block;
+    }
+
+    .blueprint-arrow {
+      font-size: 14px;
+      color: var(--text-muted);
+    }
+
+    /* صحنه بوم */
+    .main-workspace {
+      flex: 1;
+      display: flex;
+      position: relative;
+      overflow: hidden;
+    }
+
+    #iso-stage {
+      flex: 1;
+      position: relative;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: radial-gradient(circle at center, #142233 0%, #070c12 100%);
+    }
+
+    canvas#iso-canvas {
+      display: block;
+      touch-action: none;
+    }
+
+    .floating-tools {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      z-index: 15;
+    }
+
+    .tool-btn {
+      width: 50px;
+      height: 50px;
+      border-radius: 14px;
+      background: var(--panel-bg);
+      border: 2px solid var(--panel-border);
+      color: var(--text-main);
+      font-size: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      box-shadow: var(--shadow-elevation);
+    }
+
+    .tool-btn.active {
+      border-color: var(--accent-cyan);
+      background: #17324b;
+    }
+
+    .tool-label {
+      font-size: 0.58rem;
+      font-weight: bold;
+      margin-top: 2px;
+    }
+
+    /* پایانه استخراج مکعب */
+    .cube-dispenser-dock {
+      position: absolute;
+      bottom: 74px;
+      right: 12px;
+      background: var(--panel-bg);
+      border: 2px solid var(--accent-cyan);
+      border-radius: 16px;
+      padding: 6px 10px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      box-shadow: var(--shadow-elevation);
+      z-index: 15;
+      touch-action: none;
+    }
+
+    .cube-drag-handle {
+      width: 56px;
+      height: 56px;
+      background: url('dispenser.png') center/contain no-repeat, #1a2a3e;
+      border: 2px dashed var(--accent-gold);
+      border-radius: 12px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-end;
+      padding-bottom: 2px;
+      cursor: grab;
+      position: relative;
+      touch-action: none;
+    }
+
+    .dispenser-text {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      line-height: 1.35;
+      max-width: 95px;
+    }
+
+    .bottom-elastic-bar {
+      position: absolute;
+      bottom: 10px;
+      left: 10px;
+      right: 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      z-index: 15;
+      pointer-events: none;
+    }
+
+    .bottom-elastic-bar > * { pointer-events: auto; }
+
+    .assistant-bubble {
+      flex: 1;
+      background: var(--panel-bg);
+      border: 2px solid var(--accent-cyan);
+      border-radius: var(--border-radius-md);
+      padding: 8px 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      box-shadow: var(--shadow-elevation);
+      backdrop-filter: blur(8px);
+    }
+
+    .assistant-avatar {
+      width: 36px;
+      height: 36px;
+      object-fit: contain;
+      flex-shrink: 0;
+    }
+
+    .assistant-text {
+      font-size: 0.85rem;
+      line-height: 1.45;
+      color: var(--text-main);
+      word-break: break-word;
+    }
+
+    /* مودال‌ها */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(4, 7, 12, 0.92);
+      backdrop-filter: blur(8px);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 12px;
+      z-index: 100;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.22s ease;
+    }
+
+    .modal-backdrop.active {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .modal-card {
+      background: #111a26;
+      border: 2px solid var(--panel-border);
+      border-radius: var(--border-radius-lg);
+      width: 100%;
+      max-width: 500px;
+      max-height: 90dvh;
+      overflow-y: auto;
+      padding: 20px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      box-shadow: var(--shadow-elevation);
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--panel-border);
+      padding-bottom: 8px;
+    }
+
+    .modal-title {
+      font-size: 1.05rem;
+      font-weight: bold;
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .shop-tabs {
+      display: flex;
+      gap: 6px;
+      border-bottom: 1px solid var(--panel-border);
+      padding-bottom: 6px;
+    }
+
+    .shop-tab-btn {
+      flex: 1;
+      padding: 6px 8px;
+      background: #162334;
+      border: 1px solid var(--panel-border);
+      border-radius: 8px;
+      color: var(--text-muted);
+      font-size: 0.8rem;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .shop-tab-btn.active {
+      background: #00708f;
+      border-color: var(--accent-cyan);
+      color: #fff;
+    }
+
+    .shop-progress-bar-container {
+      background: rgba(0, 0, 0, 0.4);
+      border-radius: 8px;
+      padding: 8px 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .shop-progress-bar {
+      height: 8px;
+      background: #1b2838;
+      border-radius: 4px;
+      overflow: hidden;
+    }
+
+    .shop-progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--accent-cyan), var(--accent-gold));
+      width: 0%;
+      transition: width 0.3s ease;
+    }
+
+    .shop-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--panel-border);
+      border-radius: var(--border-radius-md);
+      padding: 10px 12px;
+      margin-bottom: 6px;
+    }
+
+    .shop-item-info { display: flex; align-items: center; gap: 10px; }
+    .shop-item-img {
+      width: 42px;
+      height: 42px;
+      object-fit: contain;
+      border-radius: 8px;
+    }
+    .shop-item-name { font-weight: bold; font-size: 0.9rem; }
+    .shop-item-desc { font-size: 0.75rem; color: var(--text-muted); }
+
+    .quiz-question-box {
+      background: #172435;
+      border: 1px solid var(--panel-border);
+      border-radius: var(--border-radius-md);
+      padding: 16px 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      text-align: center;
+    }
+
+    .quiz-options {
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+    }
+
+    .scaffold-dialog-box {
+      background: rgba(0, 229, 255, 0.08);
+      border: 1.5px solid var(--accent-cyan);
+      border-radius: var(--border-radius-md);
+      padding: 12px;
+      display: none;
+      flex-direction: column;
+      gap: 10px;
+      text-align: right;
+    }
+
+    .scaffold-text {
+      font-size: 0.88rem;
+      line-height: 1.65;
+      color: #e0f7fa;
+    }
+
+    .formula-builder-card {
+      background: #142131;
+      border: 2px dashed var(--accent-cyan);
+      border-radius: var(--border-radius-md);
+      padding: 14px 10px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .formula-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      font-size: 1rem;
+      font-weight: bold;
+      direction: ltr;
+      flex-wrap: wrap;
+    }
+
+    .formula-input {
+      width: 48px;
+      height: 44px;
+      background: #0c141e;
+      border: 2px solid var(--accent-gold);
+      border-radius: 8px;
+      color: var(--accent-gold);
+      font-size: 1.2rem;
+      font-weight: bold;
+      text-align: center;
+      outline: none;
+    }
+
+    .formula-select {
+      height: 44px;
+      padding: 0 6px;
+      background: #0c141e;
+      border: 2px solid var(--accent-cyan);
+      border-radius: 8px;
+      color: var(--accent-cyan);
+      font-size: 1.1rem;
+      font-weight: bold;
+      outline: none;
+    }
+
+    .formula-hint-box {
+      background: rgba(255, 184, 0, 0.1);
+      border: 1px solid var(--accent-gold);
+      border-radius: 8px;
+      padding: 8px 12px;
+      font-size: 0.85rem;
+      line-height: 1.55;
+      color: #ffe082;
+      display: none;
+    }
+
+    .active-formula-banner {
+      background: rgba(0, 229, 255, 0.1);
+      border: 1.5px solid var(--accent-cyan);
+      border-radius: var(--border-radius-md);
+      padding: 10px 12px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      text-align: center;
+    }
+
+    .active-formula-title {
+      font-size: 0.75rem;
+      color: var(--accent-cyan);
+      font-weight: bold;
+    }
+
+    .active-formula-math {
+      font-size: 1.05rem;
+      font-weight: bold;
+      color: #ffffff;
+      direction: rtl;
+    }
+
+    .extrapolate-input-box {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+      margin: 6px 0;
+    }
+
+    .number-input-lg {
+      width: 120px;
+      height: 52px;
+      font-size: 1.6rem;
+      font-weight: bold;
+      text-align: center;
+      background: #09121c;
+      border: 2px solid var(--accent-gold);
+      color: var(--accent-gold);
+      border-radius: var(--border-radius-md);
+      outline: none;
+    }
+
+    .tut-step-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--panel-border);
+      transition: all 0.2s;
+    }
+    .tut-step-dot.active {
+      background: var(--accent-cyan);
+      transform: scale(1.3);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- صفحه آغازین -->
+  <div id="start-screen">
+    <div class="splash-card">
+      <div class="splash-icon">🤖</div>
+      <h1 class="splash-title">معمار روباتیک</h1>
+      <div class="splash-credit">طراحی شده با ❤️ توسط معلمت آقای عربی</div>
+      
+      <p style="font-size: 0.9rem; line-height: 1.65; color: var(--text-muted);">
+        به کارگاه اتوماسیون خوش آمدی! سازه‌های مکعبی را با کشیدن و رها کردن بساز، راز الگوهای عددی را کشف کن و خط تولید کارخانه را راه‌اندازی کن.
+      </p>
+
+      <div class="splash-stats" id="splash-stats-box">
+        <div>سکه: <span id="splash-coins">۰</span></div>
+        <div>سطح: <span id="splash-level">۱</span></div>
+        <div>تکمیل فروشگاه: <span id="splash-shop-progress">۰٪</span></div>
+      </div>
+
+      <button class="btn-start-game" id="btn-main-start">
+        <span>🚀</span>
+        <span id="btn-start-label">ورود به کارگاه اتوماسیون</span>
+      </button>
+
+      <button class="btn-touch" id="btn-splash-tutorial" style="width: 100%; min-height: 42px;">
+        📘 مطالعه راهنمای بازی
+      </button>
+    </div>
+  </div>
+
+  <!-- کارگاه بازی -->
+  <div id="app-viewport">
+    <header class="top-bar">
+      <div class="brand-section" id="brand-tap-zone" title="۳ ضربه برای پنل معلم">
+        <span class="brand-icon">🤖</span>
+        <h1 class="brand-title">معمار روباتیک</h1>
+      </div>
+
+      <div class="economy-cluster">
+        <div class="stat-badge coin-badge">
+          <img src="coin-energy.png" alt="⚡" style="width: 20px; height: 20px; object-fit: contain;" onerror="this.style.display='none'">
+          <span id="stat-coins">۰</span>
+        </div>
+        <div class="stat-badge">
+          <span>🏭</span>
+          <span id="stat-factory-level">۱</span>
+        </div>
+      </div>
+
+      <div class="top-actions">
+        <button class="btn-touch btn-gold" id="btn-open-shop">🛒 فروشگاه</button>
+        <button class="btn-touch btn-purple" id="btn-open-teacher">⚙️</button>
+        <button class="btn-touch" id="btn-open-tutorial">❓</button>
+      </div>
+    </header>
+
+    <!-- ویترین پویا -->
+    <section class="blueprint-strip">
+      <div class="blueprint-card">
+        <span class="blueprint-label" id="preview-lbl-1">شکل (۱)</span>
+        <canvas class="blueprint-canvas" id="canvas-sample-1"></canvas>
+      </div>
+
+      <span class="blueprint-arrow">➔</span>
+
+      <div class="blueprint-card">
+        <span class="blueprint-label" id="preview-lbl-2">شکل (۲)</span>
+        <canvas class="blueprint-canvas" id="canvas-sample-2"></canvas>
+      </div>
+
+      <span class="blueprint-arrow">➔</span>
+
+      <div class="blueprint-card active-target">
+        <span class="blueprint-label" id="target-blueprint-title">شکل (۳) [هدف]</span>
+        <div style="width: 68px; height: 48px; display: flex; align-items: center; justify-content: center; font-size: 22px; color: var(--accent-gold);">
+          ❓
+        </div>
+      </div>
+    </section>
+
+    <!-- بوم اصلی و ابزارها -->
+    <main class="main-workspace">
+      <div id="iso-stage">
+        <canvas id="iso-canvas"></canvas>
+
+        <div class="floating-tools">
+          <button class="tool-btn" id="tool-remove" title="حذف یک مکعب با لمس">
+            <span>🗑️</span>
+            <span class="tool-label">حذف</span>
+          </button>
+          <button class="tool-btn" id="tool-clear" title="پاک‌سازی کل صفحه">
+            <span>🔄</span>
+            <span class="tool-label">از نو</span>
+          </button>
+        </div>
+
+        <!-- پایانه استخراج مکعب -->
+        <div class="cube-dispenser-dock" id="cube-dispenser-dock">
+          <div class="cube-drag-handle" id="cube-drag-source">
+            <span style="font-size: 0.6rem; color: var(--accent-gold); font-weight: bold; background: rgba(0,0,0,0.65); padding: 1px 4px; border-radius: 4px;">بکشید</span>
+          </div>
+          <div class="dispenser-text">
+            بکشید یا روی زمین ضربه بزنید!
+          </div>
+        </div>
+      </div>
+
+      <footer class="bottom-elastic-bar">
+        <div class="assistant-bubble">
+          <img class="assistant-avatar" id="active-bot-avatar" src="bot-worker.png" alt="🤖" onerror="this.style.display='none'">
+          <p class="assistant-text" id="assistant-speech">
+            مکعب را از پایانه بکش یا مستقیماً روی خانه‌ها ضربه بزن!
+          </p>
+        </div>
+        <button class="btn-touch btn-green" id="btn-verify-build" style="min-height: 48px; font-size: 0.95rem;">
+          ✅ تایید
+        </button>
+      </footer>
+    </main>
+  </div>
+
+  <!-- مودال ۱: سنجش فهم تک‌سوالی -->
+  <div class="modal-backdrop" id="modal-diagnostic">
+    <div class="modal-card">
+      <div class="modal-header">
+        <div class="modal-title"><span>🧠</span><span>سنجش درک آهنگ رشد الگو</span></div>
+      </div>
+
+      <div class="quiz-question-box" id="quiz-interactive-box">
+        <p style="font-size: 1.1rem; line-height: 1.6; font-weight: bold;">
+          آیا متوجه شدی شکل‌ها چند تا چند تا جلو می‌روند؟
+        </p>
+
+        <div class="quiz-options" id="quiz-action-buttons">
+          <button class="btn-touch btn-green" style="min-width: 100px; font-size: 0.95rem;" id="quiz-btn-yes">بله، متوجه شدم ✅</button>
+          <button class="btn-touch btn-red" style="min-width: 100px; font-size: 0.95rem;" id="quiz-btn-no">خیر، مطمئن نیستم ❌</button>
+        </div>
+
+        <div class="scaffold-dialog-box" id="scaffold-dialog-box">
+          <div style="font-size: 0.8rem; color: var(--accent-cyan); font-weight: bold;">💡 راهنمای تفکر ربات دستیار:</div>
+          <p class="scaffold-text">
+            اشکالی ندارد! به شکل (۱) و شکل (۲) در ویترین بالای صفحه با دقت نگاه کن. بشمار که از شکل اول تا شکل دوم، دقیقاً چند مکعب اضافه شده است؟ این مقدارِ اضافه‌شده در هر گام، همان «آهنگ رشد» الگو است که باید در شماره شکل ضرب شود.
+          </p>
+          <button class="btn-touch btn-cyan" id="scaffold-btn-continue" style="align-self: center; min-height: 40px;">
+            حالا متوجه شدم، بریم فرمول رو بسازیم ➔
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- مودال ۲: ساخت معادله -->
+  <div class="modal-backdrop" id="modal-formula">
+    <div class="modal-card">
+      <div class="modal-header">
+        <div class="modal-title"><span>📐</span><span>ساخت معادله و فرمول الگو</span></div>
+      </div>
+
+      <p style="font-size: 0.9rem; color: var(--text-muted); text-align: center;">
+        رابطه جبری این الگو را بنویس تا ربات بتواند شکل‌های دوردست را سریع محاسبه کند:
+      </p>
+
+      <div class="formula-builder-card">
+        <div style="font-size: 0.95rem; color: var(--accent-cyan); font-weight: bold;">
+          تعداد مکعب‌ها =
+        </div>
+        <div class="formula-row">
+          <span>( شماره شکل × </span>
+          <input type="number" class="formula-input" id="formula-mult" placeholder="؟" min="1" max="9">
+          <span> )</span>
+          <select class="formula-select" id="formula-op">
+            <option value="none">بدون علامت</option>
+            <option value="+">+</option>
+            <option value="-">-</option>
+          </select>
+          <input type="number" class="formula-input" id="formula-const" placeholder="؟" min="0" max="9">
+        </div>
+      </div>
+
+      <div class="formula-hint-box" id="formula-hint-box">
+        💡 <strong>راهنما:</strong> <span id="formula-hint-text"></span>
+      </div>
+
+      <div style="display: flex; gap: 8px;">
+        <button class="btn-touch btn-green" id="btn-submit-formula" style="flex: 1; min-height: 46px;">
+          🚀 ثبت معادله نهایی
+        </button>
+        <button class="btn-touch btn-gold" id="btn-request-hint">
+          ❓ راهنمایی
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- مودال ۳: سفارش دوردست با اعداد کاملاً پویا و تصادفی -->
+  <div class="modal-backdrop" id="modal-extrapolate">
+    <div class="modal-card">
+      <div class="modal-header">
+        <div class="modal-title"><span>🚀</span><span>سفارش غول‌پیکر کارخانه!</span></div>
+      </div>
+
+      <p style="font-size: 0.9rem; line-height: 1.65; color: var(--text-muted); text-align: center;">
+        این سازه بسیار بزرگ است و به دلیل ابعاد زمین کارگاه نمی‌توانیم آن را بسازیم. اما تو فرمولش را کشف کردی! با فرمول زیر تعداد مکعب‌ها را حساب کن:
+      </p>
+
+      <div class="extrapolate-input-box">
+        <div style="font-size: 1.05rem; font-weight: bold; color: var(--accent-gold);" id="extrapolate-question-title">
+          شکل شماره (...) به چند مکعب نیاز دارد؟
+        </div>
+        <input type="number" class="number-input-lg" id="extrapolate-user-answer" placeholder="؟">
+      </div>
+
+      <div class="active-formula-banner">
+        <span class="active-formula-title">فرمول کشف‌شده شما:</span>
+        <span class="active-formula-math" id="active-formula-display">تعداد مکعب‌ها = ...</span>
+      </div>
+
+      <div class="formula-hint-box" id="extrapolate-hint-box">
+        💡 <strong>راهنما:</strong> <span id="extrapolate-hint-text"></span>
+      </div>
+
+      <button class="btn-touch btn-green" id="btn-submit-extrapolate" style="min-height: 48px; font-size: 1rem;">
+        ⚡ تحویل سفارش و دریافت پاداش
+      </button>
+    </div>
+  </div>
+
+  <!-- مودال ۴: فروشگاه -->
+  <div class="modal-backdrop" id="modal-shop">
+    <div class="modal-card">
+      <div class="modal-header">
+        <div class="modal-title"><span>🛒</span><span>فروشگاه تجهیزات کارخانه</span></div>
+        <button class="btn-touch" id="btn-close-shop">✕</button>
+      </div>
+
+      <div class="shop-progress-bar-container">
+        <div style="display:flex; justify-content:space-between; font-size:0.8rem;">
+          <span>پیشرفت تکمیل کارخانه:</span>
+          <span id="shop-completion-pct" style="color:var(--accent-gold); font-weight:bold;">۰٪</span>
+        </div>
+        <div class="shop-progress-bar">
+          <div class="shop-progress-fill" id="shop-progress-fill"></div>
+        </div>
+      </div>
+
+      <div class="shop-tabs">
+        <button class="shop-tab-btn active" id="tab-btn-bots">🤖 روبات‌ها</button>
+        <button class="shop-tab-btn" id="tab-btn-factory">🏭 خطوط</button>
+        <button class="shop-tab-btn" id="tab-btn-skins">🎨 پوسته‌ها</button>
+      </div>
+
+      <div id="shop-items-container"></div>
+    </div>
+  </div>
+
+  <!-- مودال پنل معلم با نشان اختصاصی badge-teacher.png -->
+  <div class="modal-backdrop" id="modal-teacher">
+    <div class="modal-card">
+      <div class="modal-header">
+        <div class="modal-title"><span>⚙️</span><span>داشبورد معلم</span></div>
+        <button class="btn-touch" id="btn-close-teacher">✕</button>
+      </div>
+      <div style="display: flex; flex-direction: column; align-items: center; gap: 6px;">
+        <img src="badge-teacher.png" alt="نشان معلم" style="width: 85px; height: auto;" onerror="this.style.display='none'">
+        <span style="font-size:0.8rem; color:#ff85a2; font-weight:bold;">طراحی پداگوژیک اختصاصی کلاس ششم ❤️</span>
+      </div>
+      <div style="background: rgba(0,0,0,0.3); padding:10px; border-radius:10px; font-size:0.85rem;">
+        <div>الگوهای تسلط‌یافته: <span id="ecd-solved" style="font-weight:bold; color:var(--accent-gold);">۰</span></div>
+        <div>خطاهای ثبتی: <span id="ecd-mistakes" style="font-weight:bold; color:var(--accent-red);">۰</span></div>
+      </div>
+      <button class="btn-touch btn-red" id="btn-reset-data">بازنشانی کامل داده‌ها</button>
+    </div>
+  </div>
+
+  <!-- مودال آموزش مرحله‌ای -->
+  <div class="modal-backdrop" id="modal-tutorial">
+    <div class="modal-card">
+      <div class="modal-header">
+        <div class="modal-title"><span>📘</span><span>راهنمای کارگاه</span></div>
+        <div style="display:flex; align-items:center; gap:6px;">
+          <span style="color: var(--accent-cyan); font-weight: bold; font-size: 0.85rem;" id="tut-step-counter">گام ۱ از ۳</span>
+          <button class="btn-touch" id="btn-close-tut" style="min-height:32px; min-width:32px; padding:2px 6px;">✕</button>
+        </div>
+      </div>
+
+      <div style="display: flex; flex-direction: column; align-items: center; text-align: center; gap: 12px; min-height: 160px; justify-content: center;">
+        <div style="font-size: 46px;" id="tut-step-icon">🧱</div>
+        <h3 style="font-size: 1.1rem; font-weight: bold; color: var(--text-main);" id="tut-step-title">ساخت الگو</h3>
+        <p style="font-size: 0.9rem; line-height: 1.65; color: var(--text-muted);" id="tut-step-desc">
+          مکعب را از جعبه بکشید یا مستقیماً روی خانه‌های زمین ضربه بزنید تا سازه شکل بگیرد!
+        </p>
+      </div>
+
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 6px;">
+        <button class="btn-touch" id="tut-btn-prev" style="visibility: hidden;">قبلی</button>
+        <div style="display: flex; gap: 6px;" id="tut-step-dots">
+          <div class="tut-step-dot active"></div>
+          <div class="tut-step-dot"></div>
+          <div class="tut-step-dot"></div>
+        </div>
+        <button class="btn-touch btn-cyan" id="tut-btn-next">بعدی ➔</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    /* ==========================================================================
+       ۱. لایه پایداری داده‌ها (Day-1 Persistence)
+       ========================================================================== */
+    const STORAGE_KEY = 'robobuilder_game_v14_final';
+
+    const DefaultState = {
+      gameStarted: false,
+      tutorialSeen: false,
+      coins: 0,
+      factoryLevel: 1,
+      currentPatternIndex: 0,
+      currentBuildStepIndex: 0,
+      activeBot: 'bot_worker',
+      activeSkin: 'skin_cyan',
+      ownedItems: ['bot_worker', 'skin_cyan'],
+      ecd: { solved: 0, mistakes: 0 }
+    };
+
+    class StorageManager {
+      static loadState() {
+        try {
+          const raw = localStorage.getItem(STORAGE_KEY);
+          return raw ? { ...DefaultState, ...JSON.parse(raw) } : { ...DefaultState };
+        } catch {
+          return { ...DefaultState };
+        }
+      }
+      static saveState(state) {
+        try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch (e) {}
+      }
+    }
+
+    let GameState = StorageManager.loadState();
+
+    function persist() {
+      StorageManager.saveState(GameState);
+      updateUIHeader();
+      updateSplashStats();
+    }
+
+    function toPersianNum(num) {
+      return String(num).replace(/[0-9]/g, d => ['۰','۱','۲','۳','۴','۵','۶','۷','۸','۹'][d]);
+    }
+
+    /* ==========================================================================
+       ۲. کاتالوگ فروشگاه با ارجاع به تصاویر محلی
+       ========================================================================== */
+    const SHOP_CATALOG = [
+      { id: 'bot_worker', category: 'bots', name: 'روبات کارگر کیوبی', desc: 'دستیار وفادار خط مونتاژ اولیه.', price: 0, image: 'bot-worker.png', icon: '🤖' },
+      { id: 'bot_optic', category: 'bots', name: 'روبات اسکنر نوری', desc: 'اسکن سریع‌تر قطعات در خط تولید.', price: 180, image: 'bot-scout.png', icon: '🛸' },
+      { id: 'bot_cyber', category: 'bots', name: 'مهندس مکانیک تایتان', desc: 'اتوماسیون قطعات سنگین کارخانه.', price: 1400, image: 'bot-titan.png', icon: '🦾' },
+
+      { id: 'fac_solar', category: 'factory', name: 'میز مونتاژ اولیه', desc: 'راه‌اندازی ایستگاه کاری اول.', price: 0, image: 'stage-1.png', icon: '🛠️' },
+      { id: 'fac_cryo', category: 'factory', name: 'تسمه‌نقاله خورشیدی', desc: 'تامین پایدار انرژی خطوط.', price: 350, image: 'stage-2.png', icon: '☀️' },
+      { id: 'fac_conveyor', category: 'factory', name: 'سکوی لیزر و خنک‌کننده', desc: 'جلوگیری از حرارت بازوها.', price: 850, image: 'stage-3.png', icon: '❄️' },
+      { id: 'fac_laser', category: 'factory', name: 'هاب روباتیک چندطبقه', desc: 'جرثقیل‌های سقفی پیشرفته.', price: 1800, image: 'stage-4.png', icon: '🏢' },
+      { id: 'fac_reactor', category: 'factory', name: 'مگافکتوری کوانتومی', desc: 'اتوماسیون کامل با راکتور پلاسما.', price: 3200, image: 'stage-5.png', icon: '🌀' },
+
+      { id: 'skin_cyan', category: 'skins', name: 'مکعب فیروزه‌ای نئون', desc: 'پوسته استاندارد مهندسی کارگاه.', price: 0, image: 'cubes-sheet.png', colors: { top:'#00f0ff', left:'#009bb3', right:'#006272' } },
+      { id: 'skin_gold', category: 'skins', name: 'مکعب طلایی تایتانیوم', desc: 'پوسته براق زرین برای قطعات خاص.', price: 350, image: 'cubes-sheet.png', colors: { top:'#ffd700', left:'#c5a000', right:'#806800' } },
+      { id: 'skin_emerald', category: 'skins', name: 'مکعب زمردی سایبری', desc: 'پوسته سبز درخشان با آلیاژ سبک.', price: 750, image: 'cubes-sheet.png', colors: { top:'#00e676', left:'#00a854', right:'#006834' } },
+      { id: 'skin_magma', category: 'skins', name: 'مکعب گدازه‌ای آتشین', desc: 'مقاوم در برابر حرارت بالا.', price: 1350, image: 'cubes-sheet.png', colors: { top:'#ff3d71', left:'#c21848', right:'#7a0928' } }
+    ];
+
+    function calculateShopProgress() {
+      const totalBuyable = SHOP_CATALOG.filter(i => i.price > 0).length;
+      const totalOwned = SHOP_CATALOG.filter(i => i.price > 0 && GameState.ownedItems.includes(i.id)).length;
+      return Math.round((totalOwned / totalBuyable) * 100);
+    }
+
+    function updateSplashStats() {
+      const pct = calculateShopProgress();
+      document.getElementById('splash-coins').textContent = toPersianNum(GameState.coins);
+      document.getElementById('splash-level').textContent = toPersianNum(GameState.factoryLevel);
+      document.getElementById('splash-shop-progress').textContent = `${toPersianNum(pct)}٪`;
+      
+      const startBtnLabel = document.getElementById('btn-start-label');
+      if (startBtnLabel) {
+        startBtnLabel.textContent = GameState.gameStarted ? 'ادامه ساخت کارخانه ➔' : 'ورود به کارگاه اتوماسیون';
+      }
+    }
+
+    function updateUIHeader() {
+      document.getElementById('stat-coins').textContent = toPersianNum(GameState.coins);
+      document.getElementById('stat-factory-level').textContent = toPersianNum(GameState.factoryLevel);
+      document.getElementById('ecd-solved').textContent = toPersianNum(GameState.ecd.solved);
+      document.getElementById('ecd-mistakes').textContent = toPersianNum(GameState.ecd.mistakes);
+
+      const botObj = SHOP_CATALOG.find(b => b.id === GameState.activeBot);
+      const avatarEl = document.getElementById('active-bot-avatar');
+      if (botObj && avatarEl && botObj.image) {
+        avatarEl.src = botObj.image;
+        avatarEl.style.display = 'block';
+      }
+    }
+
+    /* ==========================================================================
+       ۳. موتور صوتی
+       ========================================================================== */
+    class SoundFX {
+      static init() {
+        if (!this.ctx) {
+          const AudioCtx = window.AudioContext || window.webkitAudioContext;
+          this.ctx = new AudioCtx();
+        }
+        if (this.ctx.state === 'suspended') this.ctx.resume();
+      }
+
+      static playPlace(pitch = 0) {
+        try {
+          this.init();
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(320 + (pitch * 40), this.ctx.currentTime);
+          osc.frequency.exponentialRampToValueAtTime(520 + (pitch * 40), this.ctx.currentTime + 0.08);
+          gain.gain.setValueAtTime(0.2, this.ctx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.08);
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+          osc.start();
+          osc.stop(this.ctx.currentTime + 0.08);
+        } catch (e) {}
+      }
+
+      static playRemove() {
+        try {
+          this.init();
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(220, this.ctx.currentTime);
+          osc.frequency.exponentialRampToValueAtTime(110, this.ctx.currentTime + 0.08);
+          gain.gain.setValueAtTime(0.2, this.ctx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.08);
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+          osc.start();
+          osc.stop(this.ctx.currentTime + 0.08);
+        } catch (e) {}
+      }
+
+      static playSuccess() {
+        try {
+          this.init();
+          const now = this.ctx.currentTime;
+          [523.25, 659.25, 783.99, 1046.50].forEach((freq, idx) => {
+            const osc = this.ctx.createOscillator();
+            const gain = this.ctx.createGain();
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(freq, now + (idx * 0.08));
+            gain.gain.setValueAtTime(0.2, now + (idx * 0.08));
+            gain.gain.exponentialRampToValueAtTime(0.001, now + (idx * 0.08) + 0.22);
+            osc.connect(gain);
+            gain.connect(this.ctx.destination);
+            osc.start(now + (idx * 0.08));
+            osc.stop(now + (idx * 0.08) + 0.22);
+          });
+        } catch (e) {}
+      }
+
+      static playError() {
+        try {
+          this.init();
+          const now = this.ctx.currentTime;
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.type = 'sawtooth';
+          osc.frequency.setValueAtTime(150, now);
+          osc.frequency.linearRampToValueAtTime(100, now + 0.18);
+          gain.gain.setValueAtTime(0.2, now);
+          gain.gain.exponentialRampToValueAtTime(0.01, now + 0.18);
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+          osc.start(now);
+          osc.stop(now + 0.18);
+        } catch (e) {}
+      }
+    }
+
+    /* ==========================================================================
+       ۴. مخزن الگوهای عددی با توابع تولید زنده (پویا)
+       ========================================================================== */
+    const MASTER_REPO = [
+      {
+        id: 'pat_even_2n',
+        title: 'سازه‌های جفت روباتیک (اعداد زوج - ص ۲)',
+        formula: { mult: 2, op: 'none', const: 0 },
+        calc: (n) => 2 * n,
+        buildSteps: [3, 4],
+        getBlocks: (n) => {
+          const blocks = [];
+          for (let i = 0; i < n; i++) {
+            blocks.push({ x: i, y: 0, h: 1 });
+            blocks.push({ x: i, y: 1, h: 1 });
+          }
+          return blocks;
+        },
+        hint: 'در این الگو، فقط شماره شکل در ۲ ضرب می‌شود و هیچ جمع یا تفریقی ندارد.'
+      },
+      {
+        id: 'pat_odd_corner',
+        title: 'الگوی گوشه‌ای L-شکل (اعداد فرد - ص ۳)',
+        formula: { mult: 2, op: '-', const: 1 },
+        calc: (n) => (2 * n) - 1,
+        buildSteps: [3, 4],
+        getBlocks: (n) => {
+          const blocks = [{ x: 0, y: 0, h: 1 }];
+          for (let i = 1; i < n; i++) {
+            blocks.push({ x: i, y: 0, h: 1 });
+            blocks.push({ x: 0, y: i, h: 1 });
+          }
+          return blocks;
+        },
+        hint: 'آهنگ رشد ۲ تا ۲ تا است (ضرب در ۲)، اما همیشه ۱ مکعب از مضرب ۲ کمتر دارد!'
+      },
+      {
+        id: 'pat_step_2n_plus_1',
+        title: 'سازه متقارن T-شکل (۲n + ۱ - ص ۶)',
+        formula: { mult: 2, op: '+', const: 1 },
+        calc: (n) => (2 * n) + 1,
+        buildSteps: [2, 3],
+        getBlocks: (n) => {
+          const blocks = [];
+          for (let i = 0; i < 2 * n + 1; i++) {
+            blocks.push({ x: i, y: 0, h: 1 });
+          }
+          return blocks;
+        },
+        hint: 'یک مکعب در مرکز ثابت است و بال‌ها ۲تا ۲تا رشد می‌کنند (۲ ضرب در شماره شکل + ۱).'
+      },
+      {
+        id: 'pat_multi_3n',
+        title: 'سه‌پایه‌های نگهدارنده (مضرب‌های ۳ - ص ۴)',
+        formula: { mult: 3, op: 'none', const: 0 },
+        calc: (n) => 3 * n,
+        buildSteps: [2, 3],
+        getBlocks: (n) => {
+          return [
+            { x: 0, y: 0, h: n },
+            { x: 1, y: 0, h: n },
+            { x: 2, y: 0, h: n }
+          ];
+        },
+        hint: 'تعداد کل مکعب‌ها همیشه ۳ برابر شماره شکل است (بدون جمع و تفریق).'
+      },
+      {
+        id: 'pat_tower_3n_plus_1',
+        title: 'برج مکعبی چندطبقه (ص ۶، سوال ۴)',
+        formula: { mult: 3, op: '+', const: 1 },
+        calc: (n) => (3 * n) + 1,
+        buildSteps: [2, 3],
+        getBlocks: (n) => {
+          return [
+            { x: 0, y: 0, h: n },
+            { x: 1, y: 0, h: n + 1 },
+            { x: 2, y: 0, h: n }
+          ];
+        },
+        hint: 'یک مکعب در بالا اضافه است و پایه‌ها ۳ تا ۳ تا رشد می‌کنند (۳ ضرب در شماره شکل + ۱).'
+      },
+      {
+        id: 'pat_rect_3n_minus_1',
+        title: 'کاشی‌کاری مستطیلی خط تولید (ص ۶)',
+        formula: { mult: 3, op: '-', const: 1 },
+        calc: (n) => (3 * n) - 1,
+        buildSteps: [2, 3],
+        getBlocks: (n) => {
+          const blocks = [];
+          for (let i = 0; i < n; i++) {
+            blocks.push({ x: i, y: 0, h: 1 });
+            blocks.push({ x: i, y: 1, h: 1 });
+            if (i < n - 1) blocks.push({ x: i, y: 2, h: 1 });
+          }
+          return blocks;
+        },
+        hint: 'آهنگ رشد ۳تا ۳تا است، اما همیشه ۱ مکعب از ۳ برابر شماره شکل کمتر دارد (۳n - ۱).'
+      },
+      {
+        id: 'pat_cross_4n_plus_1',
+        title: 'سازه صلیبی چهارشاخه (۴n + ۱)',
+        formula: { mult: 4, op: '+', const: 1 },
+        calc: (n) => (4 * n) + 1,
+        buildSteps: [2, 3],
+        getBlocks: (n) => {
+          const c = n;
+          const blocks = [{ x: c, y: c, h: 1 }];
+          for (let i = 1; i <= n; i++) {
+            blocks.push({ x: c + i, y: c, h: 1 });
+            blocks.push({ x: c - i, y: c, h: 1 });
+            blocks.push({ x: c, y: c + i, h: 1 });
+            blocks.push({ x: c, y: c - i, h: 1 });
+          }
+          return blocks;
+        },
+        hint: 'یک مکعب در مرکز ثابت است و ۴ بازوی اطراف در هر مرحله یکی اضافه می‌شوند (۴n + ۱).'
+      },
+      {
+        id: 'pat_multi_5n',
+        title: 'پره‌های توربین انرژی (مضرب‌های ۵ - ص ۵)',
+        formula: { mult: 5, op: 'none', const: 0 },
+        calc: (n) => 5 * n,
+        buildSteps: [2, 3],
+        getBlocks: (n) => {
+          const blocks = [];
+          for (let i = 0; i < 5; i++) {
+            blocks.push({ x: i, y: 0, h: n });
+          }
+          return blocks;
+        },
+        hint: 'در این سازه، ۵ ستون مساوی همگام با هم رشد می‌کنند (۵ ضرب در شماره شکل).'
+      }
+    ];
+
+    /* ==========================================================================
+       ۵. بوم ایزومتریک ۶×۶ با تطبیق لمسی
+       ========================================================================== */
+    const GRID_SIZE = 6;
+    let voxelGrid = Array(GRID_SIZE).fill(null).map(() => Array(GRID_SIZE).fill(0));
+    let activeTool = 'add';
+
+    const canvas = document.getElementById('iso-canvas');
+    const ctx = canvas.getContext('2d');
+    const stageContainer = document.getElementById('iso-stage');
+
+    function getTileMetrics() {
+      const isMobile = window.innerWidth < 600;
+      return {
+        tw: isMobile ? 50 : 64,
+        th: isMobile ? 25 : 32,
+        bh: isMobile ? 20 : 25
+      };
+    }
+
+    const dragState = {
+      isDragging: false,
+      pointerX: 0,
+      pointerY: 0,
+      hoverCell: null
+    };
+
+    function resizeCanvas() {
+      const rect = stageContainer.getBoundingClientRect();
+      const dpr = window.devicePixelRatio || 1;
+      canvas.width = rect.width * dpr;
+      canvas.height = rect.height * dpr;
+      canvas.style.width = rect.width + 'px';
+      canvas.style.height = rect.height + 'px';
+      ctx.scale(dpr, dpr);
+      renderScene();
+    }
+    window.addEventListener('resize', resizeCanvas);
+
+    function rawIsoProject(gx, gy, gz, tw, th, bh) {
+      return { x: (gx - gy) * (tw / 2), y: (gx + gy) * (th / 2) - (gz * bh) };
+    }
+
+    function getActiveSkinColors() {
+      const skinObj = SHOP_CATALOG.find(i => i.id === GameState.activeSkin);
+      return skinObj && skinObj.colors ? skinObj.colors : { top:'#00f0ff', left:'#009bb3', right:'#006272' };
+    }
+
+    function drawVoxelBlock(context, x, y, tw, th, bh, cTop, cLeft, cRight, alpha = 1.0) {
+      context.save();
+      context.globalAlpha = alpha;
+
+      const hw = tw / 2;
+      const hh = th / 2;
+
+      context.beginPath();
+      context.moveTo(x, y - bh);
+      context.lineTo(x + hw, y - bh + hh);
+      context.lineTo(x, y - bh + th);
+      context.lineTo(x - hw, y - bh + hh);
+      context.closePath();
+      context.fillStyle = cTop;
+      context.fill();
+      context.strokeStyle = '#0a1d30';
+      context.lineWidth = 1;
+      context.stroke();
+
+      context.beginPath();
+      context.moveTo(x - hw, y - bh + hh);
+      context.lineTo(x, y - bh + th);
+      context.lineTo(x, y - bh + th + bh);
+      context.lineTo(x - hw, y - bh + hh + bh);
+      context.closePath();
+      context.fillStyle = cLeft;
+      context.fill();
+      context.stroke();
+
+      context.beginPath();
+      context.moveTo(x, y - bh + th);
+      context.lineTo(x + hw, y - bh + hh);
+      context.lineTo(x + hw, y - bh + hh + bh);
+      context.lineTo(x, y - bh + th + bh);
+      context.closePath();
+      context.fillStyle = cRight;
+      context.fill();
+      context.stroke();
+
+      context.restore();
+    }
+
+    function drawGroundShadow(context, x, y, tw, th) {
+      context.save();
+      context.beginPath();
+      context.ellipse(x, y + th / 2, tw * 0.42, th * 0.38, 0, 0, Math.PI * 2);
+      context.fillStyle = 'rgba(0, 0, 0, 0.48)';
+      context.fill();
+      context.restore();
+    }
+
+    function renderPreviewCard(canvasId, blocksWithHeight) {
+      const c = document.getElementById(canvasId);
+      if (!c) return;
+      const cx = c.getContext('2d');
+      const dpr = window.devicePixelRatio || 1;
+      const rect = c.getBoundingClientRect();
+      const w = c.width = (rect.width || 68) * dpr;
+      const h = c.height = (rect.height || 48) * dpr;
+      cx.clearRect(0, 0, w, h);
+
+      const tw = 14 * dpr;
+      const th = 7 * dpr;
+      const bh = 7 * dpr;
+
+      const voxelList = [];
+      blocksWithHeight.forEach(b => {
+        for (let z = 0; z < b.h; z++) voxelList.push({ x: b.x, y: b.y, z });
+      });
+
+      let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+      voxelList.forEach(v => {
+        const p = rawIsoProject(v.x, v.y, v.z, tw, th, bh);
+        if (p.x - tw / 2 < minX) minX = p.x - tw / 2;
+        if (p.x + tw / 2 > maxX) maxX = p.x + tw / 2;
+        if (p.y - bh < minY) minY = p.y - bh;
+        if (p.y + th > maxY) maxY = p.y + th;
+      });
+
+      const offsetX = (w / 2) - (minX + maxX) / 2;
+      const offsetY = (h / 2) - (minY + maxY) / 2;
+
+      voxelList.sort((a, b) => (a.x + a.y + a.z * 0.01) - (b.x + b.y + b.z * 0.01));
+      voxelList.forEach(v => {
+        const p = rawIsoProject(v.x, v.y, v.z, tw, th, bh);
+        drawVoxelBlock(cx, p.x + offsetX, p.y + offsetY, tw, th, bh, '#ffb800', '#c28c00', '#856000');
+      });
+    }
+
+    function renderScene() {
+      const rect = stageContainer.getBoundingClientRect();
+      ctx.clearRect(0, 0, rect.width, rect.height);
+      const ox = rect.width / 2;
+      const oy = rect.height / 2 + 10;
+      const skin = getActiveSkinColors();
+      const { tw, th, bh } = getTileMetrics();
+
+      for (let x = 0; x < GRID_SIZE; x++) {
+        for (let y = 0; y < GRID_SIZE; y++) {
+          const p = rawIsoProject(x, y, 0, tw, th, bh);
+          const px = ox + p.x;
+          const py = oy + p.y;
+          const hw = tw / 2;
+          const hh = th / 2;
+
+          const isHovered = dragState.isDragging && dragState.hoverCell && dragState.hoverCell.gx === x && dragState.hoverCell.gy === y;
+
+          ctx.beginPath();
+          ctx.moveTo(px, py);
+          ctx.lineTo(px + hw, py + hh);
+          ctx.lineTo(px, py + th);
+          ctx.lineTo(px - hw, py + hh);
+          ctx.closePath();
+
+          ctx.fillStyle = isHovered ? '#1a3d54' : (((x + y) % 2 === 0) ? '#162334' : '#111c29');
+          ctx.fill();
+          ctx.strokeStyle = isHovered ? '#00e5ff' : '#22364c';
+          ctx.lineWidth = isHovered ? 2 : 1;
+          ctx.stroke();
+        }
+      }
+
+      if (dragState.isDragging && dragState.hoverCell) {
+        const p = rawIsoProject(dragState.hoverCell.gx, dragState.hoverCell.gy, 0, tw, th, bh);
+        drawGroundShadow(ctx, ox + p.x, oy + p.y, tw, th);
+      }
+
+      for (let sum = 0; sum <= (GRID_SIZE - 1) * 2; sum++) {
+        for (let x = 0; x < GRID_SIZE; x++) {
+          const y = sum - x;
+          if (y >= 0 && y < GRID_SIZE) {
+            for (let z = 0; z < voxelGrid[x][y]; z++) {
+              const p = rawIsoProject(x, y, z, tw, th, bh);
+              drawVoxelBlock(ctx, ox + p.x, oy + p.y, tw, th, bh, skin.top, skin.left, skin.right);
+            }
+          }
+        }
+      }
+
+      if (dragState.isDragging && dragState.hoverCell) {
+        const { gx, gy, gz } = dragState.hoverCell;
+        const p = rawIsoProject(gx, gy, gz, tw, th, bh);
+        drawVoxelBlock(ctx, ox + p.x, oy + p.y, tw, th, bh, '#00e5ff', '#009bb3', '#006272', 0.45);
+      }
+
+      if (dragState.isDragging) {
+        drawVoxelBlock(ctx, dragState.pointerX, dragState.pointerY - 36, tw * 0.9, th * 0.9, bh * 0.9, skin.top, skin.left, skin.right, 0.92);
+      }
+    }
+
+    function pickCell(sx, sy) {
+      const rect = stageContainer.getBoundingClientRect();
+      const ox = rect.width / 2;
+      const oy = rect.height / 2 + 10;
+      const { tw, th, bh } = getTileMetrics();
+
+      const candidates = [];
+      for (let x = 0; x < GRID_SIZE; x++) {
+        for (let y = 0; y < GRID_SIZE; y++) {
+          candidates.push({ x, y, z: voxelGrid[x][y] });
+        }
+      }
+      candidates.sort((a, b) => (b.x + b.y + b.z * 1.5) - (a.x + a.y + a.z * 1.5));
+
+      for (const c of candidates) {
+        if (c.z > 0) {
+          const cx = ox + (c.x - c.y) * (tw / 2);
+          const cy = oy + (c.x + c.y) * (th / 2) - c.z * bh + th / 2;
+          const dist = Math.abs(sx - cx) / (tw / 2) + Math.abs(sy - cy) / (th / 2);
+          if (dist <= 1.05) {
+            return { gx: c.x, gy: c.y, gz: c.z };
+          }
+        }
+      }
+
+      let best = null;
+      let bestDist = Infinity;
+      for (let x = 0; x < GRID_SIZE; x++) {
+        for (let y = 0; y < GRID_SIZE; y++) {
+          const cx = ox + (x - y) * (tw / 2);
+          const cy = oy + (x + y) * (th / 2) + th / 2;
+          const dist = Math.abs(sx - cx) / (tw / 2) + Math.abs(sy - cy) / (th / 2);
+          if (dist <= 1.05 && dist < bestDist) {
+            bestDist = dist;
+            best = { gx: x, gy: y, gz: voxelGrid[x][y] };
+          }
+        }
+      }
+      return best;
+    }
+
+    function isStructureConnected() {
+      let start = null, total = 0;
+      const visited = Array(GRID_SIZE).fill(null).map(() => Array(GRID_SIZE).fill(false));
+      for (let x = 0; x < GRID_SIZE; x++) {
+        for (let y = 0; y < GRID_SIZE; y++) {
+          if (voxelGrid[x][y] > 0) {
+            total++;
+            if (!start) start = { x, y };
+          }
+        }
+      }
+      if (total === 0) return false;
+      let count = 0;
+      const q = [start];
+      visited[start.x][start.y] = true;
+      while (q.length > 0) {
+        const { x, y } = q.shift();
+        count++;
+        [{ x: x + 1, y }, { x: x - 1, y }, { x, y: y + 1 }, { x, y: y - 1 }].forEach(n => {
+          if (n.x >= 0 && n.x < GRID_SIZE && n.y >= 0 && n.y < GRID_SIZE) {
+            if (voxelGrid[n.x][n.y] > 0 && !visited[n.x][n.y]) {
+              visited[n.x][n.y] = true;
+              q.push(n);
+            }
+          }
+        });
+      }
+      return count === total;
+    }
+
+    function countPlacedVoxels() {
+      let total = 0;
+      for (let x = 0; x < GRID_SIZE; x++) {
+        for (let y = 0; y < GRID_SIZE; y++) total += voxelGrid[x][y];
+      }
+      return total;
+    }
+
+    /* ==========================================================================
+       ۶. فیزیک لمسی و کشیدن
+       ========================================================================== */
+    const dragSource = document.getElementById('cube-drag-source');
+
+    function startDrag(clientX, clientY) {
+      const rect = stageContainer.getBoundingClientRect();
+      dragState.isDragging = true;
+      dragState.pointerX = clientX - rect.left;
+      dragState.pointerY = clientY - rect.top;
+      dragState.hoverCell = null;
+      renderScene();
+      SoundFX.playPlace(0);
+    }
+
+    function updateDrag(clientX, clientY) {
+      if (!dragState.isDragging) return;
+      const rect = stageContainer.getBoundingClientRect();
+      dragState.pointerX = clientX - rect.left;
+      dragState.pointerY = clientY - rect.top;
+
+      const target = pickCell(dragState.pointerX, dragState.pointerY - 20);
+      if (target && voxelGrid[target.gx][target.gy] < 4) {
+        dragState.hoverCell = target;
+      } else {
+        dragState.hoverCell = null;
+      }
+      renderScene();
+    }
+
+    function endDrag() {
+      if (!dragState.isDragging) return;
+
+      if (dragState.hoverCell) {
+        const { gx, gy } = dragState.hoverCell;
+        if (voxelGrid[gx][gy] < 4) {
+          voxelGrid[gx][gy]++;
+          SoundFX.playPlace(voxelGrid[gx][gy]);
+        }
+      }
+
+      dragState.isDragging = false;
+      dragState.hoverCell = null;
+      renderScene();
+    }
+
+    dragSource.addEventListener('pointerdown', (e) => {
+      e.preventDefault();
+      startDrag(e.clientX, e.clientY);
+    });
+
+    window.addEventListener('pointermove', (e) => {
+      if (dragState.isDragging) {
+        e.preventDefault();
+        updateDrag(e.clientX, e.clientY);
+      }
+    });
+
+    window.addEventListener('pointerup', () => endDrag());
+    window.addEventListener('pointercancel', () => endDrag());
+
+    canvas.addEventListener('pointerdown', (e) => {
+      const rect = stageContainer.getBoundingClientRect();
+      const sx = e.clientX - rect.left;
+      const sy = e.clientY - rect.top;
+      const target = pickCell(sx, sy);
+
+      if (target) {
+        if (activeTool === 'remove') {
+          if (voxelGrid[target.gx][target.gy] > 0) {
+            voxelGrid[target.gx][target.gy]--;
+            SoundFX.playRemove();
+            renderScene();
+          }
+        } else {
+          if (voxelGrid[target.gx][target.gy] < 4) {
+            voxelGrid[target.gx][target.gy]++;
+            SoundFX.playPlace(voxelGrid[target.gx][target.gy]);
+            renderScene();
+          }
+        }
+      }
+    });
+
+    const toolRemoveBtn = document.getElementById('tool-remove');
+    const toolClearBtn = document.getElementById('tool-clear');
+
+    toolRemoveBtn.addEventListener('click', () => {
+      activeTool = activeTool === 'remove' ? 'add' : 'remove';
+      toolRemoveBtn.classList.toggle('active', activeTool === 'remove');
+      if (activeTool === 'remove') {
+        setAssistantSpeech('حالت حذف فعال است: روی هر مکعب ضربه بزنید برداشته می‌شود.');
+      } else {
+        setAssistantSpeech('مکعب را بکشید یا مستقیماً روی زمین ضربه بزنید.');
+      }
+    });
+
+    toolClearBtn.addEventListener('click', () => {
+      voxelGrid = Array(GRID_SIZE).fill(null).map(() => Array(GRID_SIZE).fill(0));
+      renderScene();
+      SoundFX.playRemove();
+      setAssistantSpeech('زمین پاک‌سازی شد. از نو شروع کن!');
+    });
+
+    function setAssistantSpeech(text) {
+      document.getElementById('assistant-speech').textContent = text;
+    }
+
+    /* ==========================================================================
+       ۷. گردش کار پویا (به‌روزرسانی زنده‌ی ویترین و فاز تعمیم)
+       ========================================================================== */
+    function loadCurrentPatternStep() {
+      if (GameState.currentPatternIndex >= MASTER_REPO.length) {
+        GameState.currentPatternIndex = 0;
+      }
+      const pat = MASTER_REPO[GameState.currentPatternIndex];
+
+      if (GameState.currentBuildStepIndex >= pat.buildSteps.length) {
+        GameState.currentBuildStepIndex = 0;
+      }
+      const targetN = pat.buildSteps[GameState.currentBuildStepIndex];
+
+      const sample1Blocks = pat.getBlocks(targetN - 2);
+      const sample2Blocks = pat.getBlocks(targetN - 1);
+
+      renderPreviewCard('canvas-sample-1', sample1Blocks);
+      renderPreviewCard('canvas-sample-2', sample2Blocks);
+
+      document.getElementById('preview-lbl-1').textContent = `شکل (${toPersianNum(targetN - 2)})`;
+      document.getElementById('preview-lbl-2').textContent = `شکل (${toPersianNum(targetN - 1)})`;
+      document.getElementById('target-blueprint-title').textContent = `شکل (${toPersianNum(targetN)}) [هدف]`;
+
+      voxelGrid = Array(GRID_SIZE).fill(null).map(() => Array(GRID_SIZE).fill(0));
+      renderScene();
+
+      setAssistantSpeech(`به دو شکل قبل در بالا نگاه کن؛ تفاوت‌شان را ببین و شکل (${toPersianNum(targetN)}) را بساز!`);
+    }
+
+    document.getElementById('btn-verify-build').onclick = () => {
+      const pat = MASTER_REPO[GameState.currentPatternIndex];
+      const targetN = pat.buildSteps[GameState.currentBuildStepIndex];
+      const requiredCount = pat.calc(targetN);
+      const placed = countPlacedVoxels();
+
+      if (placed === 0) {
+        SoundFX.playError();
+        setAssistantSpeech('هنوز هیچ مکعبی روی زمین نچیده‌ای! مکعب را بکش یا ضربه بزن.');
+        return;
+      }
+
+      if (placed === requiredCount) {
+        if (!isStructureConnected()) {
+          SoundFX.playError();
+          GameState.ecd.mistakes++;
+          persist();
+          setAssistantSpeech('مکعب‌ها از هم جدا هستند! قطعات باید به هم متصل باشند.');
+          return;
+        }
+
+        SoundFX.playSuccess();
+        GameState.coins += 15;
+        persist();
+
+        if (GameState.currentBuildStepIndex < pat.buildSteps.length - 1) {
+          setAssistantSpeech(`عالی بود! شکل (${toPersianNum(targetN)}) تایید شد. حالا شکل بعدی را بساز! ⚡`);
+          setTimeout(() => {
+            GameState.currentBuildStepIndex++;
+            persist();
+            loadCurrentPatternStep();
+          }, 1500);
+        } else {
+          setAssistantSpeech('آفرین مهندس! دست‌ورزی این الگو کامل شد. حالا تفکر ریاضی‌ات را بسنجیم...');
+          setTimeout(startDiagnosticQuiz, 1300);
+        }
+
+      } else {
+        SoundFX.playError();
+        GameState.ecd.mistakes++;
+        persist();
+        if (placed < requiredCount) {
+          setAssistantSpeech('تعداد مکعب‌هایت کمتر از الگو است. تفاوت دو شکل قبل را دوباره نگاه کن.');
+        } else {
+          setAssistantSpeech('مکعب‌های زیادی چیده‌ای! با ابزار سطل زباله، موارد اضافی را بردار.');
+        }
+      }
+    };
+
+    function startDiagnosticQuiz() {
+      document.getElementById('quiz-action-buttons').style.display = 'flex';
+      document.getElementById('scaffold-dialog-box').style.display = 'none';
+      document.getElementById('modal-diagnostic').classList.add('active');
+    }
+
+    document.getElementById('quiz-btn-yes').onclick = () => {
+      SoundFX.playPlace(1);
+      document.getElementById('modal-diagnostic').classList.remove('active');
+      openFormulaStation();
+    };
+
+    document.getElementById('quiz-btn-no').onclick = () => {
+      SoundFX.playPlace(0);
+      document.getElementById('quiz-action-buttons').style.display = 'none';
+      document.getElementById('scaffold-dialog-box').style.display = 'flex';
+    };
+
+    document.getElementById('scaffold-btn-continue').onclick = () => {
+      SoundFX.playPlace(1);
+      document.getElementById('modal-diagnostic').classList.remove('active');
+      openFormulaStation();
+    };
+
+    function openFormulaStation() {
+      const pat = MASTER_REPO[GameState.currentPatternIndex];
+      document.getElementById('formula-mult').value = '';
+      document.getElementById('formula-op').value = 'none';
+      document.getElementById('formula-const').value = '';
+      document.getElementById('formula-hint-text').textContent = pat.hint;
+      document.getElementById('formula-hint-box').style.display = 'none';
+      document.getElementById('modal-formula').classList.add('active');
+    }
+
+    document.getElementById('btn-request-hint').onclick = () => {
+      document.getElementById('formula-hint-box').style.display = 'block';
+      SoundFX.playPlace(1);
+    };
+
+    document.getElementById('btn-submit-formula').onclick = () => {
+      const pat = MASTER_REPO[GameState.currentPatternIndex];
+      const uMult = parseInt(document.getElementById('formula-mult').value, 10);
+      const uOp = document.getElementById('formula-op').value;
+      const uConst = parseInt(document.getElementById('formula-const').value || '0', 10);
+
+      if (isNaN(uMult)) {
+        alert('لطفاً ضریب شماره شکل را وارد کن!');
+        return;
+      }
+
+      const expected = pat.formula;
+      const isMultCorrect = uMult === expected.mult;
+      const isOpCorrect = (expected.op === 'none' && (uOp === 'none' || uConst === 0)) || (uOp === expected.op);
+      const isConstCorrect = (expected.op === 'none' && (uConst === 0 || isNaN(uConst))) || (uConst === expected.const);
+
+      if (isMultCorrect && isOpCorrect && isConstCorrect) {
+        SoundFX.playSuccess();
+        GameState.coins += 35;
+        persist();
+
+        document.getElementById('modal-formula').classList.remove('active');
+        setTimeout(openExtrapolateStation, 500);
+
+      } else {
+        SoundFX.playError();
+        GameState.ecd.mistakes++;
+        persist();
+        document.getElementById('formula-hint-box').style.display = 'block';
+
+        if (!isMultCorrect) {
+          document.getElementById('formula-hint-text').textContent =
+            'ضریب ضرب اشتباه است! در هر مرحله مکعب‌ها چندتا چندتا اضافه می‌شوند؟ ضریب همان آهنگ رشد پله‌هاست.';
+        } else {
+          document.getElementById('formula-hint-text').textContent =
+            'ضریب درست است، اما عدد جمع یا تفریق دقیق نیست! فرمول را برای شکل ۱ امتحان کن.';
+        }
+      }
+    };
+
+    let currentDynamicExtrapolateN = 15;
+
+    function openExtrapolateStation() {
+      const pat = MASTER_REPO[GameState.currentPatternIndex];
+      const distantPool = [12, 14, 15, 16, 18, 20, 22, 25, 30];
+      currentDynamicExtrapolateN = distantPool[Math.floor(Math.random() * distantPool.length)];
+
+      document.getElementById('extrapolate-user-answer').value = '';
+      document.getElementById('extrapolate-hint-box').style.display = 'none';
+
+      document.getElementById('extrapolate-question-title').textContent =
+        `شکل شماره (${toPersianNum(currentDynamicExtrapolateN)}) به چند مکعب نیاز دارد؟`;
+
+      let formulaText = `تعداد مکعب‌ها = ( شماره شکل × ${toPersianNum(pat.formula.mult)} )`;
+      if (pat.formula.op !== 'none' && pat.formula.const > 0) {
+        formulaText += ` ${pat.formula.op} ${toPersianNum(pat.formula.const)}`;
+      }
+      document.getElementById('active-formula-display').textContent = formulaText;
+
+      document.getElementById('modal-extrapolate').classList.add('active');
+    }
+
+    document.getElementById('btn-submit-extrapolate').onclick = () => {
+      const pat = MASTER_REPO[GameState.currentPatternIndex];
+      const userVal = parseInt(document.getElementById('extrapolate-user-answer').value, 10);
+
+      if (isNaN(userVal)) {
+        alert('لطفاً پاسخ عددی خود را وارد کن!');
+        return;
+      }
+
+      const expectedVal = pat.calc(currentDynamicExtrapolateN);
+
+      if (userVal === expectedVal) {
+        SoundFX.playSuccess();
+        GameState.coins += 50;
+        GameState.ecd.solved++;
+
+        GameState.currentPatternIndex = (GameState.currentPatternIndex + 1) % MASTER_REPO.length;
+        GameState.currentBuildStepIndex = 0;
+        GameState.factoryLevel++;
+        persist();
+
+        document.getElementById('modal-extrapolate').classList.remove('active');
+        setAssistantSpeech(`شاهکار کردی مهندس! شکل (${toPersianNum(currentDynamicExtrapolateN)}) را با قدرت فرمول حساب کردی (${toPersianNum(expectedVal)} مکعب). ۵۰ سکه انرژی گرفتی! 🏭`);
+
+        setTimeout(() => {
+          loadCurrentPatternStep();
+        }, 2000);
+
+      } else {
+        SoundFX.playError();
+        GameState.ecd.mistakes++;
+        persist();
+
+        document.getElementById('extrapolate-hint-box').style.display = 'block';
+        document.getElementById('extrapolate-hint-text').textContent =
+          `محاسبه دقیق نیست! در فرمول پایین، جای شماره شکل، عدد (${toPersianNum(currentDynamicExtrapolateN)}) را بگذار و حساب کن.`;
+      }
+    };
+
+    /* ==========================================================================
+       ۸. فروشگاه
+       ========================================================================== */
+    let currentShopTab = 'bots';
+
+    function renderShop() {
+      const container = document.getElementById('shop-items-container');
+      container.innerHTML = '';
+
+      const filtered = SHOP_CATALOG.filter(i => i.category === currentShopTab);
+
+      filtered.forEach(item => {
+        const isOwned = GameState.ownedItems.includes(item.id);
+        const isActive = (item.category === 'bots' && GameState.activeBot === item.id) ||
+                         (item.category === 'skins' && GameState.activeSkin === item.id);
+
+        const el = document.createElement('div');
+        el.className = 'shop-item';
+        el.innerHTML = `
+          <div class="shop-item-info">
+            <img class="shop-item-img" src="${item.image}" alt="${item.name}" onerror="this.style.display='none'">
+            <div>
+              <div class="shop-item-name">${item.name}</div>
+              <div class="shop-item-desc">${item.desc}</div>
+            </div>
+          </div>
+          <div>
+            ${isActive ? '<button class="btn-touch btn-green" disabled>فعال</button>' :
+              isOwned ? (item.category === 'factory' ? '<button class="btn-touch btn-green" disabled>نصب شده</button>' : `<button class="btn-touch btn-cyan" onclick="equipItem('${item.id}', '${item.category}')">انتخاب</button>`) :
+              `<button class="btn-touch btn-gold" onclick="buyItem('${item.id}', ${item.price})">⚡ ${toPersianNum(item.price)}</button>`
+            }
+          </div>
+        `;
+        container.appendChild(el);
+      });
+
+      const pct = calculateShopProgress();
+      document.getElementById('shop-completion-pct').textContent = `${toPersianNum(pct)}٪`;
+      document.getElementById('shop-progress-fill').style.width = `${pct}%`;
+    }
+
+    window.buyItem = function(itemId, price) {
+      if (GameState.coins >= price) {
+        GameState.coins -= price;
+        GameState.ownedItems.push(itemId);
+
+        const itemObj = SHOP_CATALOG.find(i => i.id === itemId);
+        if (itemObj && itemObj.category === 'bots') GameState.activeBot = itemId;
+        if (itemObj && itemObj.category === 'skins') GameState.activeSkin = itemId;
+
+        persist();
+        renderShop();
+        renderScene();
+        SoundFX.playSuccess();
+      } else {
+        SoundFX.playError();
+        alert('سکه انرژی کافی نداری! با کشف الگوها سکه جمع کن.');
+      }
+    };
+
+    window.equipItem = function(itemId, category) {
+      if (category === 'bots') GameState.activeBot = itemId;
+      if (category === 'skins') GameState.activeSkin = itemId;
+      persist();
+      renderShop();
+      renderScene();
+      SoundFX.playPlace(2);
+    };
+
+    document.getElementById('tab-btn-bots').onclick = () => {
+      currentShopTab = 'bots';
+      document.querySelectorAll('.shop-tab-btn').forEach(b => b.classList.remove('active'));
+      document.getElementById('tab-btn-bots').classList.add('active');
+      renderShop();
+    };
+
+    document.getElementById('tab-btn-factory').onclick = () => {
+      currentShopTab = 'factory';
+      document.querySelectorAll('.shop-tab-btn').forEach(b => b.classList.remove('active'));
+      document.getElementById('tab-btn-factory').classList.add('active');
+      renderShop();
+    };
+
+    document.getElementById('tab-btn-skins').onclick = () => {
+      currentShopTab = 'skins';
+      document.querySelectorAll('.shop-tab-btn').forEach(b => b.classList.remove('active'));
+      document.getElementById('tab-btn-skins').classList.add('active');
+      renderShop();
+    };
+
+    document.getElementById('btn-open-shop').onclick = () => {
+      renderShop();
+      document.getElementById('modal-shop').classList.add('active');
+    };
+    document.getElementById('btn-close-shop').onclick = () => document.getElementById('modal-shop').classList.remove('active');
+
+    /* ==========================================================================
+       ۹. راهنمای مرحله‌ای
+       ========================================================================== */
+    const TUTORIAL_DATA = [
+      {
+        icon: '🧱',
+        title: 'ساخت الگو',
+        desc: 'مکعب را از جعبه بکشید یا مستقیماً روی خانه‌های زمین ضربه بزنید تا سازه شکل بگیرد!'
+      },
+      {
+        icon: '📐',
+        title: 'فرمول‌سازی بدون ماشین‌حساب',
+        desc: 'بعد از ساخت موفق سازه، به سوال ربات درباره آهنگ رشد پاسخ بده و رابطه جبری الگو را کامل کن.'
+      },
+      {
+        icon: '🚀',
+        title: 'سفارش‌های غول‌پیکر و فروشگاه',
+        desc: 'با فرمولی که کشف کردی، سازه‌های بزرگ دوردست را محاسبه کن، سکه بگیر و فروشگاه را ۱۰۰٪ کامل کن!'
+      }
+    ];
+
+    let curTutStep = 0;
+
+    function renderTutStep(stepIdx) {
+      const data = TUTORIAL_DATA[stepIdx];
+      document.getElementById('tut-step-counter').textContent = `گام ${toPersianNum(stepIdx + 1)} از ${toPersianNum(TUTORIAL_DATA.length)}`;
+      document.getElementById('tut-step-icon').textContent = data.icon;
+      document.getElementById('tut-step-title').textContent = data.title;
+      document.getElementById('tut-step-desc').textContent = data.desc;
+
+      document.getElementById('tut-btn-prev').style.visibility = stepIdx === 0 ? 'hidden' : 'visible';
+      document.getElementById('tut-btn-next').textContent = stepIdx === TUTORIAL_DATA.length - 1 ? 'شروع مهندسی! 🚀' : 'بعدی ➔';
+
+      const dots = document.getElementById('tut-step-dots').children;
+      for (let i = 0; i < dots.length; i++) {
+        dots[i].classList.toggle('active', i === stepIdx);
+      }
+    }
+
+    function openTutorialFlow() {
+      curTutStep = 0;
+      renderTutStep(curTutStep);
+      document.getElementById('modal-tutorial').classList.add('active');
+    }
+
+    document.getElementById('tut-btn-next').onclick = () => {
+      if (curTutStep < TUTORIAL_DATA.length - 1) {
+        curTutStep++;
+        renderTutStep(curTutStep);
+      } else {
+        document.getElementById('modal-tutorial').classList.remove('active');
+        GameState.tutorialSeen = true;
+        persist();
+      }
+    };
+
+    document.getElementById('tut-btn-prev').onclick = () => {
+      if (curTutStep > 0) {
+        curTutStep--;
+        renderTutStep(curTutStep);
+      }
+    };
+
+    document.getElementById('btn-splash-tutorial').onclick = openTutorialFlow;
+    document.getElementById('btn-open-tutorial').onclick = openTutorialFlow;
+    document.getElementById('btn-close-tut').onclick = () => {
+      document.getElementById('modal-tutorial').classList.remove('active');
+      GameState.tutorialSeen = true;
+      persist();
+    };
+
+    /* ==========================================================================
+       ۱۰. کنترل‌های صفحه آغازین و داشبورد معلم
+       ========================================================================== */
+    const startScreen = document.getElementById('start-screen');
+
+    document.getElementById('btn-main-start').onclick = () => {
+      SoundFX.init();
+      GameState.gameStarted = true;
+      persist();
+
+      startScreen.classList.add('hidden');
+      resizeCanvas();
+      loadCurrentPatternStep();
+
+      if (!GameState.tutorialSeen) {
+        setTimeout(openTutorialFlow, 250);
+      }
+    };
+
+    document.getElementById('btn-open-teacher').onclick = () => document.getElementById('modal-teacher').classList.add('active');
+    document.getElementById('btn-close-teacher').onclick = () => document.getElementById('modal-teacher').classList.remove('active');
+
+    document.getElementById('btn-reset-data').onclick = () => {
+      if (confirm('آیا از بازنشانی داده‌های کلاس اطمینان دارید؟')) {
+        localStorage.removeItem(STORAGE_KEY);
+        GameState = { ...DefaultState };
+        persist();
+        document.getElementById('modal-teacher').classList.remove('active');
+        startScreen.classList.remove('hidden');
+        updateSplashStats();
+      }
+    };
+
+    let tapCount = 0, tapTimer = null;
+    document.getElementById('brand-tap-zone').onclick = () => {
+      tapCount++;
+      clearTimeout(tapTimer);
+      tapTimer = setTimeout(() => { tapCount = 0; }, 700);
+      if (tapCount >= 3) {
+        tapCount = 0;
+        document.getElementById('modal-teacher').classList.add('active');
+      }
+    };
+
+    window.addEventListener('DOMContentLoaded', () => {
+      updateUIHeader();
+      updateSplashStats();
+    });
+  </script>
+</body>
+</html>
